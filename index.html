@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FRC Port Diagram Creator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #001a4d 0%, #002b7a 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .diagram-box {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        button {
+            background: #001a4d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: #002b7a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 26, 77, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .port-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .port-table thead {
+            background: #f5f5f5;
+        }
+
+        .port-table th {
+            color: #001a4d;
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .port-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .port-table tbody tr:hover {
+            background: #f9f9f9;
+        }
+
+        .port-table input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d0d0d0;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s ease;
+        }
+
+        .port-table input:focus {
+            outline: none;
+            border-color: #001a4d;
+            box-shadow: 0 0 0 3px rgba(0, 26, 77, 0.1);
+        }
+
+        .delete-btn {
+            background: #ff4444;
+            padding: 8px 12px;
+            font-size: 13px;
+            width: 100%;
+        }
+
+        .delete-btn:hover {
+            background: #ff2222;
+        }
+
+        .add-port-btn {
+            background: #2ecc71;
+            width: 100%;
+            padding: 12px;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .add-port-btn:hover {
+            background: #27ae60;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .empty-state svg {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .header-inputs {
+            display: flex;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .header-inputs input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid #d0d0d0;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #001a4d;
+        }
+
+        .header-inputs input:focus {
+            outline: none;
+            border-color: #001a4d;
+            box-shadow: 0 0 0 3px rgba(0, 26, 77, 0.1);
+        }
+
+        @media (max-width: 600px) {
+            .diagram-box {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            .controls button {
+                width: 100%;
+            }
+
+            .port-table th,
+            .port-table td {
+                padding: 12px 8px;
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>FRC Port Diagram</h1>
+            <p class="subtitle">Create and manage your robot's port configuration</p>
+        </header>
+
+        <div class="diagram-box">
+            <div class="header-row">
+                <div class="header-inputs">
+                    <input type="text" id="portColumnName" placeholder="Port Number" value="Port Number">
+                    <input type="text" id="deviceColumnName" placeholder="Shit Connected" value="Shit Connected">
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="add-port-btn" onclick="addPort()">+ Add Port</button>
+                <button onclick="downloadImage()">⬇ Download Image</button>
+                <button onclick="clearAll()">🗑 Clear All</button>
+            </div>
+
+            <div id="tableContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize data from localStorage
+        let ports = JSON.parse(localStorage.getItem('froPorts')) || [];
+
+        function renderTable() {
+            const container = document.getElementById('tableContainer');
+            const portColName = document.getElementById('portColumnName').value || 'Port Number';
+            const deviceColName = document.getElementById('deviceColumnName').value || 'Shit Connected';
+
+            if (ports.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <p>No ports yet. Click "+ Add Port" to get started!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <table class="port-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40%;">${escapeHtml(portColName)}</th>
+                            <th style="width: 50%;">${escapeHtml(deviceColName)}</th>
+                            <th style="width: 10%;"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            ports.forEach((port, index) => {
+                html += `
+                    <tr>
+                        <td><input type="text" value="${escapeHtml(port.name)}" onchange="updatePort(${index}, 'name', this.value)" placeholder="e.g. PWM 0"></td>
+                        <td><input type="text" value="${escapeHtml(port.device)}" onchange="updatePort(${index}, 'device', this.value)" placeholder="e.g. Drive Motor"></td>
+                        <td><button class="delete-btn" onclick="deletePort(${index})">Delete</button></td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    </tbody>
+                </table>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        function addPort() {
+            ports.push({ name: '', device: '' });
+            savePorts();
+            renderTable();
+        }
+
+        function updatePort(index, field, value) {
+            if (ports[index]) {
+                ports[index][field] = value;
+                savePorts();
+            }
+        }
+
+        function deletePort(index) {
+            ports.splice(index, 1);
+            savePorts();
+            renderTable();
+        }
+
+        function clearAll() {
+            if (confirm('Are you sure? This will delete all ports.')) {
+                ports = [];
+                savePorts();
+                renderTable();
+            }
+        }
+
+        function savePorts() {
+            localStorage.setItem('froPorts', JSON.stringify(ports));
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        function downloadImage() {
+            if (ports.length === 0) {
+                alert('Add some ports first!');
+                return;
+            }
+
+            const portColName = document.getElementById('portColumnName').value || 'Port Number';
+            const deviceColName = document.getElementById('deviceColumnName').value || 'Shit Connected';
+
+            // Create a canvas to draw the table
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            const padding = 40;
+            const rowHeight = 50;
+            const col1Width = 250;
+            const col2Width = 350;
+            const totalWidth = col1Width + col2Width + padding * 2;
+            const totalHeight = (ports.length + 1) * rowHeight + padding * 2;
+
+            canvas.width = totalWidth;
+            canvas.height = totalHeight;
+
+            // White background
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Border
+            ctx.strokeStyle = '#001a4d';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(padding / 2, padding / 2, totalWidth - padding, totalHeight - padding);
+
+            ctx.font = 'bold 16px Arial';
+            ctx.fillStyle = '#001a4d';
+
+            // Header
+            ctx.fillStyle = '#f5f5f5';
+            ctx.fillRect(padding / 2, padding / 2, totalWidth - padding, rowHeight);
+            ctx.fillStyle = '#001a4d';
+            ctx.fillText(portColName, padding + 15, padding + 35);
+            ctx.fillText(deviceColName, padding + col1Width + 15, padding + 35);
+
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 1;
+
+            // Rows
+            ctx.font = '14px Arial';
+            ports.forEach((port, index) => {
+                const y = padding / 2 + (index + 1) * rowHeight;
+                
+                // Horizontal line
+                ctx.beginPath();
+                ctx.moveTo(padding / 2, y);
+                ctx.lineTo(totalWidth - padding / 2, y);
+                ctx.stroke();
+
+                ctx.fillStyle = '#333';
+                ctx.fillText(port.name || '-', padding + 15, y + 35);
+                ctx.fillText(port.device || '-', padding + col1Width + 15, y + 35);
+            });
+
+            // Vertical line between columns
+            ctx.beginPath();
+            ctx.moveTo(padding / 2 + col1Width, padding / 2);
+            ctx.lineTo(padding / 2 + col1Width, totalHeight - padding / 2);
+            ctx.stroke();
+
+            // Download
+            const link = document.createElement('a');
+            link.href = canvas.toDataURL('image/png');
+            link.download = 'frc-port-diagram.png';
+            link.click();
+        }
+
+        // Save column names to localStorage
+        document.getElementById('portColumnName').addEventListener('change', () => {
+            localStorage.setItem('frcPortColName', document.getElementById('portColumnName').value);
+        });
+
+        document.getElementById('deviceColumnName').addEventListener('change', () => {
+            localStorage.setItem('frcDeviceColName', document.getElementById('deviceColumnName').value);
+        });
+
+        // Load column names from localStorage
+        const savedPortColName = localStorage.getItem('frcPortColName');
+        const savedDeviceColName = localStorage.getItem('frcDeviceColName');
+        if (savedPortColName) document.getElementById('portColumnName').value = savedPortColName;
+        if (savedDeviceColName) document.getElementById('deviceColumnName').value = savedDeviceColName;
+
+        // Initial render
+        renderTable();
+    </script>
+</body>
+</html>
