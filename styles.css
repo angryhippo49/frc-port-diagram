@@ -30,7 +30,7 @@
 
         .subtitle {
             font-size: 14px;
-            color: rgba(255, 255, 255, 0.7);
+            color: rgba(18, 16, 16, 0.7);
         }
 
         .tabs {
@@ -89,7 +89,7 @@
 
         button {
             background: #001a4d;
-            color: white;
+            color: rgb(6, 6, 6);
             border: none;
             padding: 10px 20px;
             border-radius: 8px;
