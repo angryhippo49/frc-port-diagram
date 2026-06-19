@@ -42,7 +42,7 @@
 
         .tab-btn {
             background: transparent;
-            color: rgba(255, 255, 255, 0.7);
+            color: rgba(18, 16, 16, 0.7);
             border: none;
             padding: 12px 24px;
             cursor: pointer;
@@ -54,14 +54,14 @@
         }
 
         .tab-btn:hover {
-            color: white;
+            color: black;
             background: transparent;
             transform: none;
             box-shadow: none;
         }
 
         .tab-btn.active {
-            color: white;
+            color: black;
             border-bottom-color: #2ecc71;
         }
 
