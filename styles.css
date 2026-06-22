@@ -42,7 +42,7 @@
 
         .tab-btn {
             background: transparent;
-            color: rgba(18, 16, 16, 0.7);
+            color: white;
             border: none;
             padding: 12px 24px;
             cursor: pointer;
@@ -61,7 +61,7 @@
         }
 
         .tab-btn.active {
-            color: black;
+            color: white;
             border-bottom-color: #2ecc71;
         }
 
