@@ -1,365 +1,105 @@
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FRC Port Diagram Creator</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>FRC Port Diagram</h1>
+            <p class="subtitle">Create and manage your robot's port configuration</p>
+        </header>
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #001a4d 0%, #002b7a 100%);
-            min-height: 100vh;
-            padding: 40px 20px;
-        }
+        <div class="diagram-box">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('ports')">📋 Port Diagram</button>
+                <button class="tab-btn" onclick="switchTab('wiring')">⚡ Wiring Diagram</button>
+            </div>
 
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
+            <!-- Port Diagram Tab -->
+            <div id="ports" class="tab-content active">
+                <div class="header-row">
+                    <div class="header-inputs">
+                        <input type="text" id="portColumnName" placeholder="Port Number" value="Port Number">
+                        <input type="text" id="deviceColumnName" placeholder="Device Connected" value="Device Connected">
+                    </div>
+                </div>
 
-        header {
-            text-align: center;
-            margin-bottom: 40px;
-            color: white;
-        }
+                <div class="controls">
+                    <button class="add-port-btn" onclick="addPort()">+ Add Port</button>
+                    <button onclick="downloadPortImage()">⬇ Download Image</button>
+                    <button onclick="clearAllPorts()">🗑 Clear All</button>
+                </div>
 
-        h1 {
-            font-size: 32px;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
+                <div id="tableContainer"></div>
+            </div>
 
-        .subtitle {
-            font-size: 14px;
-            color: rgba(18, 16, 16, 0.7);
-        }
+            <!-- Wiring Diagram Tab -->
+            <div id="wiring" class="tab-content">
+                <div class="wiring-controls">
+                    <div class="control-group">
+                        <label>Tool</label>
+                        <select id="toolSelect" onchange="selectTool(this.value)">
+                            <option value="wire">📍 Wire (Draw)</option>
+                            <option value="component">◯ Component</option>
+                            <option value="label">T Label</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Wire Color</label>
+                        <select id="wireColor" onchange="updateWireColor()">
+                            <option value="#000000">⬤ Black</option>
+                            <option value="#ff0000">🔴 Red</option>
+                            <option value="#0000ff">🔵 Blue</option>
+                            <option value="#ffd700">🟡 Yellow</option>
+                            <option value="#ff6600">🟠 Orange</option>
+                            <option value="#00cc00">🟢 Green</option>
+                            <option value="#ff00ff">🟣 Purple</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Wire Thickness</label>
+                        <input type="range" id="wireThickness" min="1" max="5" value="2" onchange="updateWireThickness()">
+                    </div>
+                    <div class="control-group">
+                        <label>Component Size</label>
+                        <input type="range" id="componentSize" min="20" max="60" value="40">
+                    </div>
+                </div>
 
-        .tabs {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 20px;
-            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
-        }
+                <div class="wiring-canvas-container">
+                    <canvas id="wiringCanvas"></canvas>
+                </div>
 
-        .tab-btn {
-            background: transparent;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            cursor: pointer;
-            font-size: 15px;
-            font-weight: 500;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s ease;
-            margin-bottom: -2px;
-        }
+                <div class="wiring-button-group">
+                    <button class="add-port-btn" onclick="downloadWiringImage()">⬇ Download Image</button>
+                    <button class="undo-btn" onclick="undoWiring()">↶ Undo</button>
+                    <button class="clear-btn" onclick="clearWiring()">🗑 Clear All</button>
+                </div>
 
-        .tab-btn:hover {
-            color: black;
-            background: transparent;
-            transform: none;
-            box-shadow: none;
-        }
+                <div class="legend">
+                    <div class="legend-title">How to Use:</div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #001a4d;"></div>
+                        <span><strong>Wire:</strong> Click and drag to draw connections</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #2ecc71;"></div>
+                        <span><strong>Component:</strong> Click to place motor, sensor, or other parts</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #3498db;"></div>
+                        <span><strong>Label:</strong> Click to add text labels to your diagram</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        .tab-btn.active {
-            color: white;
-            border-bottom-color: #2ecc71;
-        }
-
-        .diagram-box {
-            background: white;
-            border-radius: 12px;
-            padding: 40px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .controls {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-        }
-
-        button {
-            background: #001a4d;
-            color: rgb(6, 6, 6);
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-
-        button:hover {
-            background: #002b7a;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 26, 77, 0.3);
-        }
-
-        button:active {
-            transform: translateY(0);
-        }
-
-        /* Port Diagram Styles */
-        .port-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-
-        .port-table thead {
-            background: #f5f5f5;
-        }
-
-        .port-table th {
-            color: #001a4d;
-            padding: 16px;
-            text-align: left;
-            font-weight: 600;
-            font-size: 14px;
-            border-bottom: 2px solid #e0e0e0;
-        }
-
-        .port-table td {
-            padding: 14px 16px;
-            border-bottom: 1px solid #e0e0e0;
-        }
-
-        .port-table tbody tr:hover {
-            background: #f9f9f9;
-        }
-
-        .port-table input {
-            width: 100%;
-            padding: 8px 12px;
-            border: 1px solid #d0d0d0;
-            border-radius: 6px;
-            font-size: 14px;
-            font-family: inherit;
-            transition: border-color 0.2s ease;
-        }
-
-        .port-table input:focus {
-            outline: none;
-            border-color: #001a4d;
-            box-shadow: 0 0 0 3px rgba(0, 26, 77, 0.1);
-        }
-
-        .delete-btn {
-            background: #ff4444;
-            padding: 8px 12px;
-            font-size: 13px;
-            width: 100%;
-        }
-
-        .delete-btn:hover {
-            background: #ff2222;
-        }
-
-        .add-port-btn {
-            background: #2ecc71;
-            padding: 12px 20px;
-            font-size: 15px;
-            font-weight: 600;
-        }
-
-        .add-port-btn:hover {
-            background: #27ae60;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: #999;
-        }
-
-        .header-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .header-inputs {
-            display: flex;
-            gap: 12px;
-            flex: 1;
-        }
-
-        .header-inputs input {
-            flex: 1;
-            padding: 10px 14px;
-            border: 1px solid #d0d0d0;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 600;
-            color: #001a4d;
-        }
-
-        .header-inputs input:focus {
-            outline: none;
-            border-color: #001a4d;
-            box-shadow: 0 0 0 3px rgba(0, 26, 77, 0.1);
-        }
-
-        /* Wiring Diagram Styles */
-        .wiring-canvas-container {
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            overflow: hidden;
-            margin-bottom: 20px;
-            background: #fafafa;
-        }
-
-        #wiringCanvas {
-            display: block;
-            width: 100%;
-            cursor: crosshair;
-            background: white;
-        }
-
-        .wiring-controls {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 12px;
-            margin-bottom: 20px;
-            padding: 20px;
-            background: #f9f9f9;
-            border-radius: 8px;
-        }
-
-        .control-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .control-group label {
-            font-size: 12px;
-            font-weight: 600;
-            color: #001a4d;
-            text-transform: uppercase;
-        }
-
-        .control-group select,
-        .control-group input {
-            padding: 8px 12px;
-            border: 1px solid #d0d0d0;
-            border-radius: 6px;
-            font-size: 14px;
-            font-family: inherit;
-        }
-
-        .control-group input:focus,
-        .control-group select:focus {
-            outline: none;
-            border-color: #001a4d;
-            box-shadow: 0 0 0 3px rgba(0, 26, 77, 0.1);
-        }
-
-        .wiring-button-group {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .wiring-button-group button {
-            flex: 1;
-            min-width: 120px;
-        }
-
-        .clear-btn {
-            background: #ff4444;
-        }
-
-        .clear-btn:hover {
-            background: #ff2222;
-        }
-
-        .undo-btn {
-            background: #3498db;
-        }
-
-        .undo-btn:hover {
-            background: #2980b9;
-        }
-
-        .legend {
-            padding: 15px;
-            background: #f9f9f9;
-            border-radius: 8px;
-            border-left: 4px solid #001a4d;
-            margin-top: 20px;
-        }
-
-        .legend-title {
-            font-weight: 600;
-            color: #001a4d;
-            margin-bottom: 10px;
-            font-size: 14px;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 13px;
-            color: #555;
-            margin-bottom: 6px;
-        }
-
-        .legend-color {
-            width: 20px;
-            height: 20px;
-            border-radius: 3px;
-            flex-shrink: 0;
-        }
-
-        @media (max-width: 600px) {
-            .diagram-box {
-                padding: 20px;
-            }
-
-            h1 {
-                font-size: 24px;
-            }
-
-            .tabs {
-                flex-direction: column;
-            }
-
-            .tab-btn {
-                width: 100%;
-            }
-
-            .controls {
-                flex-direction: column;
-            }
-
-            .controls button {
-                width: 100%;
-            }
-
-            .port-table th,
-            .port-table td {
-                padding: 12px 8px;
-                font-size: 13px;
-            }
-
-            .wiring-controls {
-                grid-template-columns: 1fr;
-            }
-
-            .wiring-button-group button {
-                width: 100%;
-            }
-        }
+ 
+</body>
+</html>
